@@ -1,8 +1,6 @@
 import sys
 import os
 
-# --- 1. OPTIMALIZACE PAMĚTI (RAM DIET) ---
-# Kombinujeme GPU akceleraci (pro plynulost) s drastickým omezením paměti.
 os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = (
     # GPU Akcelerace (aby to nezatěžovalo CPU)
     "--enable-gpu-rasterization "
@@ -24,7 +22,7 @@ from PyQt6.QtGui import QAction, QIcon, QPixmap, QPainter, QColor, QPainterPath
 from PyQt6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile, QWebEngineSettings
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 
-# Identita
+# fake identita
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 def create_messenger_icon():
@@ -114,7 +112,7 @@ class MainWindow(QMainWindow):
             settings.setAttribute(QWebEngineSettings.WebAttribute.WebGLEnabled, True)
             settings.setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, False)
 
-        # --- VIEW & PAGE ---
+        # VIEW & PAGE
         self.browser = QWebEngineView()
         self.page = MessengerPage(self.profile, self.browser)
         self.page.featurePermissionRequested.connect(self.page.on_feature_permission_requested)
@@ -123,17 +121,14 @@ class MainWindow(QMainWindow):
         if not self.is_child: 
             self.browser.setUrl(QUrl("https://www.messenger.com/"))
 
-        # --- LAYOUT ---
         central = QWidget()
         lay = QVBoxLayout(central)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.addWidget(self.browser)
         self.setCentralWidget(central)
 
-        # --- TRAY & TOUR (Pouze hlavní okno) ---
         if not self.is_child:
             self.setup_tray()
-            # Zde voláme logiku pro první spuštění
             self.run_first_time_tour()
 
     def setup_tray(self):
@@ -142,10 +137,10 @@ class MainWindow(QMainWindow):
 
         tray_menu = QMenu()
         
-        action_show = QAction("Otevřít", self)
+        action_show = QAction("Open", self)
         action_show.triggered.connect(self.show_window)
         
-        action_quit = QAction("Ukončit Messenger", self)
+        action_quit = QAction("Close Messenger", self)
         action_quit.triggered.connect(self.app_quit)
 
         tray_menu.addAction(action_show)
@@ -168,20 +163,19 @@ class MainWindow(QMainWindow):
             
             # Vytvoříme jednoduchý dialog
             msg = QMessageBox(self)
-            msg.setWindowTitle("Vítejte v Messenger Pro")
+            msg.setWindowTitle("Welcome to Messenger Pro")
             msg.setIconPixmap(self.app_icon.pixmap(64, 64))
-            msg.setText("<h3>Aplikace je připravena!</h3>")
+            msg.setText("<h3>App Is Ready!</h3>")
             msg.setInformativeText(
-                "Tato aplikace běží na pozadí, i když zavřete toto okno.<br><br>"
-                "<b>Ovládání:</b><br>"
-                "• Ikonu najdete v systémové liště (u hodin).<br>"
-                "• Kliknutím na ikonu okno otevřete/skryjete.<br>"
-                "• Pravým tlačítkem na ikonu aplikaci úplně ukončíte."
+                "This app is running on the background even after you close it.<br><br>"
+                "<b>Controls:</b><br>"
+                "• You can find messenger icon in the taskbar menu near the clock.<br>"
+                "• Clicking on icon, you can open the app.<br>"
+                "• Right click on icon in taskbar to shut messenger down."
             )
             msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-            msg.exec() # Zobrazí okno a čeká na OK
+            msg.exec() 
 
-            # Vytvoříme marker soubor, aby se to příště nestalo
             try:
                 with open(marker_file, 'w') as f:
                     f.write("Tour completed.")
@@ -216,15 +210,6 @@ class MainWindow(QMainWindow):
         else:
             event.ignore()
             self.hide()
-            
-            if self.first_close_notification:
-                self.tray_icon.showMessage(
-                    "Messenger Pro",
-                    "Aplikace běží na pozadí. Klikni na ikonu v liště.",
-                    QSystemTrayIcon.MessageIcon.Information,
-                    2000
-                )
-                self.first_close_notification = False
 
 def main():
     os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
