@@ -1,5 +1,5 @@
 #define MyAppName "MessengeR"
-#define MyAppVersion "2026.1.2"
+#define MyAppVersion "2026.1.3"
 #define MyAppPublisher "MessengeR"
 #define MyAppExeName "MessengeR.exe"
 
