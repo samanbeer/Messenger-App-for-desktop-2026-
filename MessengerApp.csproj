@@ -27,6 +27,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="web_installer\**" />
+    <Page Remove="web_installer\**" />
+    <Resource Remove="web_installer\**" />
+    <None Remove="web_installer\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
   </ItemGroup>

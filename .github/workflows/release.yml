@@ -1,0 +1,48 @@
+name: Build and Release MessengeR
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Setup Inno Setup
+        uses: calleerlandsson/action-innosetup@v1
+
+      - name: Publish Standalone MessengeR
+        run: |
+          dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o ./publish_standalone
+
+      - name: Build Inno Setup Installer
+        run: |
+          iscc installer.iss
+
+      - name: Publish Online Web Installer
+        run: |
+          dotnet publish web_installer/MessengeR.WebInstaller.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o ./output_web_temp
+          Move-Item ./output_web_temp/MessengeR_WebInstaller.exe ./output/MessengeR_Online_Installer.exe -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: MessengeR ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            output/MessengeR_Setup.exe
+            output/MessengeR_Online_Installer.exe

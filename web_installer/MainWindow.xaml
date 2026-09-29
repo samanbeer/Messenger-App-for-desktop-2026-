@@ -1,0 +1,54 @@
+<Window x:Class="MessengeR.WebInstaller.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MessengeR Instalátor"
+        Icon="icon.ico"
+        Width="480" Height="320"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#18191A">
+    <Grid Margin="25">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+            <Image Source="icon.png" Width="56" Height="56" Margin="0,0,16,0"/>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="MessengeR" FontSize="22" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="Online instalátor nejnovější verze z GitHubu" FontSize="12" Foreground="#8A8D91" Margin="0,2,0,0"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Options and Status -->
+        <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,15,0,0">
+            <CheckBox x:Name="ChkDesktop" Content="Vytvořit zástupce na ploše" IsChecked="True" Foreground="#E4E6EB" FontSize="13" Margin="0,0,0,8"/>
+            <CheckBox x:Name="ChkStartMenu" Content="Vytvořit zástupce v nabídce Start" IsChecked="True" Foreground="#E4E6EB" FontSize="13"/>
+        </StackPanel>
+
+        <!-- Progress Area -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,20">
+            <TextBlock x:Name="StatusText" Text="Připraveno ke stažení a instalaci." Foreground="#B0B3B8" FontSize="12" Margin="0,0,0,6"/>
+            <ProgressBar x:Name="DownloadProgress" Height="10" Minimum="0" Maximum="100" Value="0"
+                         Background="#242526" Foreground="#0084FF" BorderThickness="0"/>
+            <TextBlock x:Name="SpeedText" Text="" Foreground="#8A8D91" FontSize="11" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Action Button -->
+        <Grid Grid.Row="3">
+            <Button x:Name="BtnInstall" Content="Stáhnout a instalovat" Height="36"
+                    Background="#0084FF" Foreground="White" FontWeight="SemiBold" FontSize="13"
+                    BorderThickness="0" Cursor="Hand" Click="BtnInstall_Click">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </Grid>
+    </Grid>
+</Window>

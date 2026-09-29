@@ -14,6 +14,7 @@ Slouží jako energeticky a paměťově úsporná náhrada za ukončenou oficiá
 - **Audio a video hovory**: Integrované udělování oprávnění pro mikrofon a kameru a dedikované okno pro hovory.
 - **Spouštění při startu Windows**: Volitelný tichý start minimalizovaný v oznamovací oblasti.
 - **Otevírání odkazů**: Externí odkazy se otevírají ve výchozím webovém prohlížeči.
+- **Automatická kontrola aktualizací**: Možnost zkontrolovat novou verzi přímo z kontextového menu v oznamovací oblasti. Při nalezení aktualizace se instalační balíček stáhne a automaticky nainstaluje.
 - **Tmavý režim**: Tmavé záhlaví ladící se systémovým vzhledem Windows.
 
 ## Požadavky a sestavení
@@ -25,15 +26,19 @@ Slouží jako energeticky a paměťově úsporná náhrada za ukončenou oficiá
 ### Příkazy pro sestavení
 
 ```powershell
-# Běžné spuštění
+# Běžné spuštění aplikace pro vývoj
 dotnet run
 
-# Publikace samostatného spustitelného .exe pro tento počítač
+# Publikace rychlého spustitelného balíčku pro lokální počítač
 dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish
 
-# Publikace a vytvoření plného instalátoru (pro odeslání komukoliv bez nutnosti instalovat .NET)
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o ./publish_standalone
-iscc installer.iss
+# Automatické vytvoření instalátorů (offline setup + online web installer)
+.\build_installer.ps1
 ```
 
-Výsledný instalační balíček se uloží do `output/MessengeR_Setup.exe`. Uživatel si při instalaci může zvolit vytvoření zástupců na ploše a v nabídce Start. Aplikace se instaluje do `%LocalAppData%\Programs\MessengeR` a nevyžaduje administrátorská práva.
+### Výsledné instalační balíčky ve složce `output/`
+
+1. **`MessengeR_Online_Installer.exe`**: Lehký online instalátor, který po spuštění automaticky stáhne nejnovější verzi z GitHubu, umožní nastavit zástupce na ploše a v nabídce Start a rovnou ji nainstaluje.
+2. **`MessengeR_Setup.exe`**: Kompletní offline instalační balíček obsahující vše v jednom bez nutnosti připojení k internetu a bez nutnosti instalovat .NET.
+
+Aplikace se instaluje do `%LocalAppData%\Programs\MessengeR` a nevyžaduje administrátorská práva. Lze ji kdykoliv standardně odinstalovat přes *Nainstalované aplikace* ve Windows.

@@ -3,12 +3,15 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media;
 using Microsoft.Toolkit.Uwp.Notifications;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Win32;
@@ -33,6 +36,9 @@ public partial class MainWindow : Window
 
     private const string StartupRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
     private const string AppRegistryName = "MessengeR";
+
+    public const string CurrentVersion = "2026.1.0";
+    public const string GitHubRepo = "samanbeer/Messenger-App-for-desktop-2026-";
 
     public MainWindow()
     {
@@ -173,12 +179,18 @@ public partial class MainWindow : Window
             Dispatcher.Invoke(() => WebViewControl.CoreWebView2?.OpenDevToolsWindow());
         });
 
+        var updateItem = new System.Windows.Forms.ToolStripMenuItem("Zkontrolovat aktualizace...", null, async (s, e) =>
+        {
+            await CheckForUpdatesAsync(false);
+        });
+
         var exitItem = new System.Windows.Forms.ToolStripMenuItem("Ukončit", null, (s, e) => ExitApp());
 
         contextMenu.Items.Add(openItem);
         contextMenu.Items.Add(reloadItem);
         contextMenu.Items.Add(navMenu);
         contextMenu.Items.Add(hideBannerItem);
+        contextMenu.Items.Add(updateItem);
         contextMenu.Items.Add(devToolsItem);
         contextMenu.Items.Add(new System.Windows.Forms.ToolStripSeparator());
         contextMenu.Items.Add(muteItem);
@@ -218,8 +230,8 @@ public partial class MainWindow : Window
                 int y = 1;
 
                 // Red circle with white border
-                using var whiteBrush = new SolidBrush(Color.White);
-                using var redBrush = new SolidBrush(Color.FromArgb(250, 62, 62));
+                using var whiteBrush = new SolidBrush(System.Drawing.Color.White);
+                using var redBrush = new SolidBrush(System.Drawing.Color.FromArgb(250, 62, 62));
 
                 g.FillEllipse(whiteBrush, x - 1, y - 1, dotSize + 2, dotSize + 2);
                 g.FillEllipse(redBrush, x, y, dotSize, dotSize);
@@ -890,6 +902,229 @@ public partial class MainWindow : Window
             await core.ExecuteScriptAsync(script);
         }
         catch { }
+    }
+
+    private async System.Threading.Tasks.Task CheckForUpdatesAsync(bool silent)
+    {
+        try
+        {
+            if (!silent)
+            {
+                _notifyIcon?.ShowBalloonTip(1500, "MessengeR", "Kontrola dostupnosti nových aktualizací...", System.Windows.Forms.ToolTipIcon.Info);
+            }
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("MessengeR-Updater");
+            client.Timeout = TimeSpan.FromSeconds(10);
+
+            string apiUrl = $"https://api.github.com/repos/{GitHubRepo}/releases/latest";
+            var response = await client.GetAsync(apiUrl);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                if (!silent)
+                {
+                    System.Windows.MessageBox.Show(
+                        $"Používáte verzi MessengeR {CurrentVersion}.\nNa GitHubu zatím není k dispozici žádné novější vydání.",
+                        "MessengeR - Aktualizace",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+                }
+                return;
+            }
+
+            string json = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            string tagName = root.TryGetProperty("tag_name", out var tagProp) ? tagProp.GetString() ?? "" : "";
+            string cleanTag = tagName.TrimStart('v', 'V');
+
+            string downloadUrl = "";
+            if (root.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var asset in assets.EnumerateArray())
+                {
+                    string name = asset.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
+                    if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        downloadUrl = asset.TryGetProperty("browser_download_url", out var u) ? u.GetString() ?? "" : "";
+                        if (name.Contains("Setup", StringComparison.OrdinalIgnoreCase))
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (string.IsNullOrEmpty(downloadUrl))
+            {
+                downloadUrl = $"https://github.com/{GitHubRepo}/releases/latest/download/MessengeR_Setup.exe";
+            }
+
+            bool isNewer = IsVersionNewer(cleanTag, CurrentVersion);
+
+            if (isNewer)
+            {
+                var ask = System.Windows.MessageBox.Show(
+                    $"Byla nalezena nová verze MessengeR ({tagName})!\nAktuální verze: {CurrentVersion}\n\nChcete aktualizaci nyní automaticky stáhnout a nainstalovat?",
+                    "Dostupná aktualizace",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question
+                );
+
+                if (ask == MessageBoxResult.Yes)
+                {
+                    await DownloadAndInstallUpdateAsync(downloadUrl, tagName);
+                }
+            }
+            else
+            {
+                if (!silent)
+                {
+                    System.Windows.MessageBox.Show(
+                        $"Máte nainstalovanou nejnovější verzi MessengeR (v{CurrentVersion}).",
+                        "MessengeR - Aktualizace",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            if (!silent)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Nepodařilo se zkontrolovat aktualizace:\n{ex.Message}",
+                    "Chyba aktualizace",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+            }
+        }
+    }
+
+    private static bool IsVersionNewer(string remoteVersion, string currentVersion)
+    {
+        try
+        {
+            if (Version.TryParse(remoteVersion, out var remote) && Version.TryParse(currentVersion, out var current))
+            {
+                return remote > current;
+            }
+        }
+        catch { }
+        return !string.IsNullOrWhiteSpace(remoteVersion) && !string.Equals(remoteVersion, currentVersion, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async System.Threading.Tasks.Task DownloadAndInstallUpdateAsync(string downloadUrl, string tagName)
+    {
+        string tempInstaller = Path.Combine(Path.GetTempPath(), $"MessengeR_Setup_{tagName}.exe");
+
+        var progressWin = new Window
+        {
+            Title = "Aktualizace MessengeR",
+            Width = 430,
+            Height = 160,
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(24, 25, 26)),
+            Foreground = System.Windows.Media.Brushes.White,
+            ResizeMode = ResizeMode.NoResize,
+            WindowStyle = WindowStyle.ToolWindow
+        };
+
+        var stack = new StackPanel { Margin = new Thickness(20) };
+        var statusText = new TextBlock
+        {
+            Text = $"Stahuji aktualizaci MessengeR ({tagName})...",
+            Foreground = System.Windows.Media.Brushes.White,
+            Margin = new Thickness(0, 0, 0, 15),
+            FontWeight = FontWeights.SemiBold
+        };
+        var pBar = new System.Windows.Controls.ProgressBar
+        {
+            Height = 12,
+            Minimum = 0,
+            Maximum = 100,
+            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 132, 255)),
+            Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(40, 42, 44))
+        };
+        var speedText = new TextBlock
+        {
+            Text = "Připojování k serveru...",
+            Foreground = System.Windows.Media.Brushes.Gray,
+            FontSize = 11,
+            Margin = new Thickness(0, 8, 0, 0)
+        };
+
+        stack.Children.Add(statusText);
+        stack.Children.Add(pBar);
+        stack.Children.Add(speedText);
+        progressWin.Content = stack;
+        progressWin.Show();
+
+        try
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("MessengeR-Updater");
+            using var response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            long? totalBytes = response.Content.Headers.ContentLength;
+            using var stream = await response.Content.ReadAsStreamAsync();
+            using var fileStream = new FileStream(tempInstaller, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
+
+            byte[] buffer = new byte[81920];
+            long bytesReadTotal = 0;
+            int bytesRead;
+
+            var stopwatch = Stopwatch.StartNew();
+
+            while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await fileStream.WriteAsync(buffer, 0, bytesRead);
+                bytesReadTotal += bytesRead;
+
+                if (totalBytes.HasValue && totalBytes.Value > 0)
+                {
+                    double pct = (double)bytesReadTotal / totalBytes.Value * 100.0;
+                    double mbRead = bytesReadTotal / (1024.0 * 1024.0);
+                    double mbTotal = totalBytes.Value / (1024.0 * 1024.0);
+                    double speed = mbRead / (stopwatch.Elapsed.TotalSeconds + 0.001);
+
+                    progressWin.Dispatcher.Invoke(() =>
+                    {
+                        pBar.Value = pct;
+                        speedText.Text = $"{mbRead:F1} MB / {mbTotal:F1} MB ({speed:F1} MB/s)";
+                    });
+                }
+            }
+
+            fileStream.Close();
+            progressWin.Close();
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = tempInstaller,
+                Arguments = "/SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS",
+                UseShellExecute = true
+            };
+            Process.Start(startInfo);
+
+            ExitApp();
+        }
+        catch (Exception ex)
+        {
+            progressWin.Close();
+            System.Windows.MessageBox.Show(
+                $"Chyba při stahování aktualizace:\n{ex.Message}",
+                "Chyba aktualizace",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error
+            );
+        }
     }
 
     private void LoadWindowSettings()
