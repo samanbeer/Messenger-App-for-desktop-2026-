@@ -28,6 +28,12 @@ Slouží jako energeticky a paměťově úsporná náhrada za ukončenou oficiá
 # Běžné spuštění
 dotnet run
 
-# Publikace samostatného spustitelného .exe
+# Publikace samostatného spustitelného .exe pro tento počítač
 dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish
+
+# Publikace a vytvoření plného instalátoru (pro odeslání komukoliv bez nutnosti instalovat .NET)
+dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o ./publish_standalone
+iscc installer.iss
 ```
+
+Výsledný instalační balíček se uloží do `output/MessengeR_Setup.exe`. Uživatel si při instalaci může zvolit vytvoření zástupců na ploše a v nabídce Start. Aplikace se instaluje do `%LocalAppData%\Programs\MessengeR` a nevyžaduje administrátorská práva.

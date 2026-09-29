@@ -8,6 +8,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+    <AssemblyName>MessengeR</AssemblyName>
     <AssemblyTitle>MessengeR</AssemblyTitle>
     <Product>MessengeR</Product>
     <Description>MessengeR Desktop App for Windows</Description>
@@ -17,6 +18,12 @@
   <ItemGroup>
     <Resource Include="icon.ico" />
     <Resource Include="icon.png" />
+    <None Update="icon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="icon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

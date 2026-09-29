@@ -921,6 +921,8 @@ public partial class MainWindow : Window
                     {
                         WindowState = WindowState.Maximized;
                     }
+
+                    _hideFullBanner = settings.HideFullBanner;
                 }
             }
         }
@@ -939,7 +941,8 @@ public partial class MainWindow : Window
                 Left = WindowState == WindowState.Normal ? Left : (RestoreBounds.Left > 0 ? RestoreBounds.Left : Left),
                 Top = WindowState == WindowState.Normal ? Top : (RestoreBounds.Top > 0 ? RestoreBounds.Top : Top),
                 Width = WindowState == WindowState.Normal ? Width : (RestoreBounds.Width > 0 ? RestoreBounds.Width : Width),
-                Height = WindowState == WindowState.Normal ? Height : (RestoreBounds.Height > 0 ? RestoreBounds.Height : Height)
+                Height = WindowState == WindowState.Normal ? Height : (RestoreBounds.Height > 0 ? RestoreBounds.Height : Height),
+                HideFullBanner = _hideFullBanner
             };
 
             string file = GetWindowSettingsPath();
