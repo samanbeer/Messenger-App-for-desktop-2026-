@@ -44,7 +44,7 @@ public partial class MainWindow : Window
     private const string StartupRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
     private const string AppRegistryName = "MessengeR";
 
-    public const string CurrentVersion = "2026.1.1";
+    public const string CurrentVersion = "2026.1.2";
     public const string GitHubRepo = "samanbeer/Messenger-App-for-desktop-2026-";
 
     public MainWindow()

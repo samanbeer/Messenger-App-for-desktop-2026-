@@ -9,9 +9,6 @@ namespace MessengerApp;
 
 public partial class App : System.Windows.Application
 {
-    [DllImport("shell32.dll", SetLastError = true)]
-    private static extern void SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string AppID);
-
     [DllImport("user32.dll")]
     private static extern bool AllowSetForegroundWindow(int dwProcessId);
     private const int ASFW_ANY = -1;
@@ -25,12 +22,6 @@ public partial class App : System.Windows.Application
 
     private void Application_Startup(object sender, StartupEventArgs e)
     {
-        try
-        {
-            SetCurrentProcessExplicitAppUserModelID("MessengeR.App.2026");
-        }
-        catch { }
-
         try
         {
             _singleInstanceMutex = new Mutex(true, AppGuid, out bool isNewInstance);
