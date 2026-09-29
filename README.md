@@ -1,39 +1,33 @@
-# Messenger App for Desktop (2026 Edition) 💬
+# MessengeR (Desktop Windows)
 
-Moderní, lehká a rychlá desktopová aplikace pro **Messenger** pro systém Windows 10 a 11, postavená na nativním **.NET 8 (WPF) + Microsoft Edge WebView2**.
+Lehká a rychlá desktopová aplikace pro Messenger na Windows 10 a 11, postavená na nativním .NET 8 (WPF) a jádru Microsoft Edge WebView2.
 
-> Facebook oficiálně ukončil podporu původního Messengeru pro desktop. Tato aplikace slouží jako plnohodnotná, energeticky i paměťově úsporná alternativa.
+Slouží jako energeticky a paměťově úsporná náhrada za ukončenou oficiální desktopovou aplikaci.
 
----
+## Funkce
 
-## ✨ Klíčové funkce
+- **Nízká spotřeba paměti**: Typicky 40–80 MB RAM na pozadí díky využití sdíleného systémového runtime WebView2 a automatickému uvolňování paměti.
+- **Čisté rozhraní bez horní lišty**: Automatické odstranění hlavičky Facebooku a nulová horní mezera pro maximální prostor na chat.
+- **Nativní oznámení Windows**: Systémové Toast notifikace s textem zprávy a avatarem odesílatele.
+- **Běh na pozadí (System Tray)**: Minimalizace do oznamovací oblasti, červený indikátor nepřečtených zpráv a rychlé kontextové menu.
+- **Pamatování velikosti a pozice**: Automatické ukládání a obnova rozměrů a umístění okna.
+- **Audio a video hovory**: Integrované udělování oprávnění pro mikrofon a kameru a dedikované okno pro hovory.
+- **Spouštění při startu Windows**: Volitelný tichý start minimalizovaný v oznamovací oblasti.
+- **Otevírání odkazů**: Externí odkazy se otevírají ve výchozím webovém prohlížeči.
+- **Tmavý režim**: Tmavé záhlaví ladící se systémovým vzhledem Windows.
 
-- ⚡ **Extrémně nízká spotřeba RAM (~40–70 MB)**: Využívá systémové jádro Microsoft Edge WebView2, které už ve Windows běží, namísto těžkého Chromium bundle.
-- 🔔 **Nativní Windows Toast Notifikace**: Skutečná systémová oznámení Windows s textem zprávy a avatarem odesílatele. Kliknutím na notifikaci se aplikace okamžitě otevře.
-- 📍 **Ikona v oznamovací oblasti (System Tray)**:
-  - Běh na pozadí při zavření křížkem nebo minimalizaci.
-  - Vizuální červený badge na ikoně při nepřečtených zprávách (`(1)`).
-  - Kontextové menu pro rychlé otevření, ztlumení oznámení, přepnutí autostartu a ukončení.
-- 🚀 **Automatické spuštění se systémem**: Možnost spustit Messenger přímo při startu Windows (minimalizovaný na pozadí).
-- 🛡️ **Integrovaný AdBlocker / Telemetrie filter**: Blokuje sledovací skripty a zbytečnou zátěž sítě pro ještě větší plynulost.
-- 📞 **Podpora audio a video hovorů**: Automatické udělování oprávnění pro mikrofon a kameru, samostatné okno pro hovory.
-- 🌐 **Chytré otevírání odkazů**: Externí odkazy se otevírají ve vašem výchozím prohlížeči, takže vám nenarušují rozhraní chatu.
-- 🌙 **Windows Dark Mode**: Tmavé záhlaví okna plně ladící s moderním vzhledem Windows 10/11.
+## Požadavky a sestavení
 
----
+- Windows 10 (1809+) nebo Windows 11
+- .NET 8 SDK / Desktop Runtime
+- Microsoft Edge WebView2 Runtime (standardní součást Windows)
 
-## 🛠️ Požadavky a spuštění
-
-- **OS**: Windows 10 (1809+) nebo Windows 11
-- **Runtime**: .NET 8 Desktop Runtime (součástí většiny moderních instalací Windows)
-- **WebView2 Runtime**: Standardně předinstalován ve Windows 10 a 11 (součást Microsoft Edge)
-
-### Sestavení ze zdrojových kódů:
+### Příkazy pro sestavení
 
 ```powershell
-# Vývojářské sestavení a spuštění
+# Běžné spuštění
 dotnet run
 
-# Publikace samostatného optimalizovaného .exe souboru
+# Publikace samostatného spustitelného .exe
 dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish
 ```

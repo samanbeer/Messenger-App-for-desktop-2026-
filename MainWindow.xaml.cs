@@ -27,12 +27,12 @@ public partial class MainWindow : Window
     private bool _isExiting;
     private bool _notificationsMuted;
     private bool _firstMinimizeShown;
-    private string _currentTitle = "Messenger";
+    private string _currentTitle = "MessengeR";
     private bool _hideFullBanner = true;
     private CoreWebView2Environment? _environment;
 
     private const string StartupRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
-    private const string AppRegistryName = "MessengerPro";
+    private const string AppRegistryName = "MessengeR";
 
     public MainWindow()
     {
@@ -87,18 +87,18 @@ public partial class MainWindow : Window
     {
         try
         {
-            // Load base icon from file or embedded resource
+            var iconSize = System.Windows.Forms.SystemInformation.SmallIconSize;
             string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "icon.ico");
             if (File.Exists(iconPath))
             {
-                _normalIcon = new Icon(iconPath);
+                _normalIcon = new Icon(iconPath, iconSize);
             }
             else
             {
                 var iconStream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/icon.ico"))?.Stream;
                 if (iconStream != null)
                 {
-                    _normalIcon = new Icon(iconStream);
+                    _normalIcon = new Icon(iconStream, iconSize);
                 }
                 else
                 {
@@ -115,24 +115,16 @@ public partial class MainWindow : Window
 
         var contextMenu = new System.Windows.Forms.ContextMenuStrip();
 
-        var openItem = new System.Windows.Forms.ToolStripMenuItem("💬 Otevřít Messenger", null, (s, e) => ShowWindow());
+        var openItem = new System.Windows.Forms.ToolStripMenuItem("Otevřít MessengeR", null, (s, e) => ShowWindow());
         openItem.Font = new Font(openItem.Font, System.Drawing.FontStyle.Bold);
 
-        var reloadItem = new System.Windows.Forms.ToolStripMenuItem("🔄 Obnovit stránku (F5)", null, (s, e) =>
+        var reloadItem = new System.Windows.Forms.ToolStripMenuItem("Obnovit stránku (F5)", null, (s, e) =>
         {
             Dispatcher.Invoke(() => WebViewControl.CoreWebView2?.Reload());
         });
 
-        var navMenu = new System.Windows.Forms.ToolStripMenuItem("🌐 Přepnout adresu");
-        var navMessenger = new System.Windows.Forms.ToolStripMenuItem("messenger.com (Samostatný)", null, (s, e) =>
-        {
-            Dispatcher.Invoke(() =>
-            {
-                ShowWindow();
-                WebViewControl.CoreWebView2?.Navigate("https://www.messenger.com/");
-            });
-        });
-        var navFb = new System.Windows.Forms.ToolStripMenuItem("facebook.com/messages (Facebook)", null, (s, e) =>
+        var navMenu = new System.Windows.Forms.ToolStripMenuItem("Přepnout adresu");
+        var navFb = new System.Windows.Forms.ToolStripMenuItem("Facebook Messages (Výchozí)", null, (s, e) =>
         {
             Dispatcher.Invoke(() =>
             {
@@ -140,23 +132,31 @@ public partial class MainWindow : Window
                 WebViewControl.CoreWebView2?.Navigate("https://www.facebook.com/messages/");
             });
         });
-        navMenu.DropDownItems.Add(navMessenger);
+        var navMessenger = new System.Windows.Forms.ToolStripMenuItem("Messenger.com", null, (s, e) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                ShowWindow();
+                WebViewControl.CoreWebView2?.Navigate("https://www.messenger.com/");
+            });
+        });
         navMenu.DropDownItems.Add(navFb);
+        navMenu.DropDownItems.Add(navMessenger);
 
-        var muteItem = new System.Windows.Forms.ToolStripMenuItem("🔔 Ztlumit oznámení");
+        var muteItem = new System.Windows.Forms.ToolStripMenuItem("Ztlumit oznámení");
         muteItem.CheckOnClick = true;
         muteItem.CheckedChanged += (s, e) =>
         {
             _notificationsMuted = muteItem.Checked;
-            muteItem.Text = _notificationsMuted ? "🔕 Oznámení jsou ztlumena" : "🔔 Ztlumit oznámení";
+            muteItem.Text = _notificationsMuted ? "Oznámení jsou ztlumena" : "Ztlumit oznámení";
         };
 
-        var startupItem = new System.Windows.Forms.ToolStripMenuItem("🚀 Spouštět při startu Windows");
+        var startupItem = new System.Windows.Forms.ToolStripMenuItem("Spouštět při startu Windows");
         startupItem.CheckOnClick = true;
         startupItem.Checked = IsRunOnStartupEnabled();
         startupItem.CheckedChanged += (s, e) => SetRunOnStartup(startupItem.Checked);
 
-        var hideBannerItem = new System.Windows.Forms.ToolStripMenuItem("🧹 Skrýt celou horní lištu Facebooku");
+        var hideBannerItem = new System.Windows.Forms.ToolStripMenuItem("Skrýt horní lištu Facebooku");
         hideBannerItem.CheckOnClick = true;
         hideBannerItem.Checked = _hideFullBanner;
         hideBannerItem.CheckedChanged += (s, e) =>
@@ -168,12 +168,12 @@ public partial class MainWindow : Window
             }
         };
 
-        var devToolsItem = new System.Windows.Forms.ToolStripMenuItem("🛠️ Vývojářské nástroje (F12)", null, (s, e) =>
+        var devToolsItem = new System.Windows.Forms.ToolStripMenuItem("Vývojářské nástroje (F12)", null, (s, e) =>
         {
             Dispatcher.Invoke(() => WebViewControl.CoreWebView2?.OpenDevToolsWindow());
         });
 
-        var exitItem = new System.Windows.Forms.ToolStripMenuItem("❌ Ukončit", null, (s, e) => ExitApp());
+        var exitItem = new System.Windows.Forms.ToolStripMenuItem("Ukončit", null, (s, e) => ExitApp());
 
         contextMenu.Items.Add(openItem);
         contextMenu.Items.Add(reloadItem);
@@ -190,7 +190,7 @@ public partial class MainWindow : Window
         {
             Icon = _normalIcon,
             Visible = true,
-            Text = "Messenger",
+            Text = "MessengeR",
             ContextMenuStrip = contextMenu
         };
 
@@ -357,7 +357,7 @@ public partial class MainWindow : Window
                     try {
                         window.chrome.webview.postMessage({
                             type: 'notification',
-                            title: title || 'Messenger',
+                            title: title || 'MessengeR',
                             body: options.body || '',
                             icon: options.icon || ''
                         });
@@ -580,7 +580,7 @@ public partial class MainWindow : Window
                 string type = typeProp.GetString() ?? "";
                 if (type == "notification")
                 {
-                    string title = root.TryGetProperty("title", out var t) ? t.GetString() ?? "Messenger" : "Messenger";
+                    string title = root.TryGetProperty("title", out var t) ? t.GetString() ?? "MessengeR" : "MessengeR";
                     string body = root.TryGetProperty("body", out var b) ? b.GetString() ?? "" : "";
                     string icon = root.TryGetProperty("icon", out var ic) ? ic.GetString() ?? "" : "";
 
@@ -606,7 +606,7 @@ public partial class MainWindow : Window
 
     private void UpdateTitleStatus(string title)
     {
-        _currentTitle = string.IsNullOrWhiteSpace(title) ? "Messenger" : title;
+        _currentTitle = string.IsNullOrWhiteSpace(title) ? "MessengeR" : title;
         Title = _currentTitle;
 
         // Check for unread message indicator like (1), (2), etc.
@@ -615,7 +615,7 @@ public partial class MainWindow : Window
         if (_notifyIcon != null)
         {
             _notifyIcon.Icon = hasUnread ? _alertIcon : _normalIcon;
-            _notifyIcon.Text = hasUnread ? $"Messenger: {_currentTitle}" : "Messenger";
+            _notifyIcon.Text = hasUnread ? $"MessengeR: {_currentTitle}" : "MessengeR";
             if (_notifyIcon.Text.Length > 63)
             {
                 _notifyIcon.Text = _notifyIcon.Text.Substring(0, 60) + "...";
@@ -795,7 +795,7 @@ public partial class MainWindow : Window
                 _firstMinimizeShown = true;
                 _notifyIcon?.ShowBalloonTip(
                     3000,
-                    "Messenger Pro",
+                    "MessengeR",
                     "Aplikace běží na pozadí v oznamovací oblasti a šetří paměť RAM.",
                     System.Windows.Forms.ToolTipIcon.Info
                 );
