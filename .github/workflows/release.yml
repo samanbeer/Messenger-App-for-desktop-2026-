@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -19,8 +22,10 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Setup Inno Setup
-        uses: calleerlandsson/action-innosetup@v1
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup --yes --no-progress
+          echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
 
       - name: Publish Standalone MessengeR
         run: |
