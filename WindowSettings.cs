@@ -8,4 +8,5 @@ public class WindowSettings
     public double Height { get; set; } = 850;
     public bool IsMaximized { get; set; } = false;
     public bool HideFullBanner { get; set; } = true;
+    public bool MinimizeNotificationShown { get; set; } = false;
 }

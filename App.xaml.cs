@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using Microsoft.Toolkit.Uwp.Notifications;
@@ -8,22 +9,71 @@ namespace MessengerApp;
 
 public partial class App : System.Windows.Application
 {
+    [DllImport("shell32.dll", SetLastError = true)]
+    private static extern void SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string AppID);
+
+    [DllImport("user32.dll")]
+    private static extern bool AllowSetForegroundWindow(int dwProcessId);
+    private const int ASFW_ANY = -1;
+
     private static Mutex? _singleInstanceMutex;
+    private static EventWaitHandle? _wakeUpEvent;
+    private static RegisteredWaitHandle? _waitHandleRegistration;
     private const string AppGuid = "MessengerPro_DotNet8_App_2026_UniqueGuid";
+    private const string WakeUpEventName = "MessengerPro_DotNet8_App_2026_WakeUp";
+    private static MainWindow? _mainWindow;
 
     private void Application_Startup(object sender, StartupEventArgs e)
     {
         try
         {
+            SetCurrentProcessExplicitAppUserModelID("MessengeR.App.2026");
+        }
+        catch { }
+
+        try
+        {
             _singleInstanceMutex = new Mutex(true, AppGuid, out bool isNewInstance);
             if (!isNewInstance)
             {
+                // Another instance is already running; wake it up and bring to foreground
+                try
+                {
+                    AllowSetForegroundWindow(ASFW_ANY);
+                    if (EventWaitHandle.TryOpenExisting(WakeUpEventName, out var wakeEvent))
+                    {
+                        wakeEvent.Set();
+                        wakeEvent.Dispose();
+                    }
+                }
+                catch { }
+
                 Shutdown();
                 return;
             }
 
-            var mainWindow = new MainWindow();
-            mainWindow.Show();
+            // Register background listener for secondary activations (e.g. pinned taskbar / shortcut clicks)
+            try
+            {
+                _wakeUpEvent = new EventWaitHandle(false, EventResetMode.AutoReset, WakeUpEventName);
+                _waitHandleRegistration = ThreadPool.RegisterWaitForSingleObject(
+                    _wakeUpEvent,
+                    (state, timedOut) =>
+                    {
+                        Dispatcher.BeginInvoke(() =>
+                        {
+                            _mainWindow?.ShowWindow();
+                        });
+                    },
+                    null,
+                    Timeout.Infinite,
+                    false
+                );
+            }
+            catch { }
+
+            _mainWindow = new MainWindow();
+            _mainWindow.Show();
         }
         catch (Exception ex)
         {
@@ -41,6 +91,13 @@ public partial class App : System.Windows.Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        try
+        {
+            _waitHandleRegistration?.Unregister(null);
+            _wakeUpEvent?.Dispose();
+        }
+        catch { }
+
         ToastNotificationManagerCompat.Uninstall();
         _singleInstanceMutex?.ReleaseMutex();
         _singleInstanceMutex?.Dispose();

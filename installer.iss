@@ -1,5 +1,5 @@
 #define MyAppName "MessengeR"
-#define MyAppVersion "2026.1.0"
+#define MyAppVersion "2026.1.1"
 #define MyAppPublisher "MessengeR"
 #define MyAppExeName "MessengeR.exe"
 
@@ -35,8 +35,8 @@ Source: "publish_standalone\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignorever
 Source: "publish_standalone\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; Tasks: startmenuicon
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; AppUserModelID: "MessengeR.App.2026"; Tasks: startmenuicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; AppUserModelID: "MessengeR.App.2026"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "Spustit aplikaci {#MyAppName}"; Flags: nowait postinstall skipifsilent

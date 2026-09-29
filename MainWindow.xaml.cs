@@ -24,6 +24,13 @@ public partial class MainWindow : Window
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
     private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
 
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll", EntryPoint = "ShowWindow")]
+    private static extern bool ShowWindowNative(IntPtr hWnd, int nCmdShow);
+    private const int SW_RESTORE = 9;
+
     private System.Windows.Forms.NotifyIcon? _notifyIcon;
     private Icon? _normalIcon;
     private Icon? _alertIcon;
@@ -37,7 +44,7 @@ public partial class MainWindow : Window
     private const string StartupRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
     private const string AppRegistryName = "MessengeR";
 
-    public const string CurrentVersion = "2026.1.0";
+    public const string CurrentVersion = "2026.1.1";
     public const string GitHubRepo = "samanbeer/Messenger-App-for-desktop-2026-";
 
     public MainWindow()
@@ -763,11 +770,27 @@ public partial class MainWindow : Window
 
     public void ShowWindow()
     {
-        Show();
+        if (!IsVisible)
+        {
+            Show();
+        }
+
         if (WindowState == WindowState.Minimized)
         {
             WindowState = WindowState.Normal;
         }
+
+        try
+        {
+            var helper = new WindowInteropHelper(this);
+            if (helper.Handle != IntPtr.Zero)
+            {
+                ShowWindowNative(helper.Handle, SW_RESTORE);
+                SetForegroundWindow(helper.Handle);
+            }
+        }
+        catch { }
+
         Activate();
         Topmost = true;
         Topmost = false;
@@ -805,6 +828,7 @@ public partial class MainWindow : Window
             if (!_firstMinimizeShown)
             {
                 _firstMinimizeShown = true;
+                SaveWindowSettings();
                 _notifyIcon?.ShowBalloonTip(
                     3000,
                     "MessengeR",
@@ -1158,6 +1182,7 @@ public partial class MainWindow : Window
                     }
 
                     _hideFullBanner = settings.HideFullBanner;
+                    _firstMinimizeShown = settings.MinimizeNotificationShown;
                 }
             }
         }
@@ -1177,7 +1202,8 @@ public partial class MainWindow : Window
                 Top = WindowState == WindowState.Normal ? Top : (RestoreBounds.Top > 0 ? RestoreBounds.Top : Top),
                 Width = WindowState == WindowState.Normal ? Width : (RestoreBounds.Width > 0 ? RestoreBounds.Width : Width),
                 Height = WindowState == WindowState.Normal ? Height : (RestoreBounds.Height > 0 ? RestoreBounds.Height : Height),
-                HideFullBanner = _hideFullBanner
+                HideFullBanner = _hideFullBanner,
+                MinimizeNotificationShown = _firstMinimizeShown
             };
 
             string file = GetWindowSettingsPath();
