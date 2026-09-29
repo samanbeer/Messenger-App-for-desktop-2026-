@@ -14,7 +14,7 @@ if (-not (Test-Path $iscc)) {
 }
 
 Write-Host "==> Kompiluji instalator pomoci Inno Setup..." -ForegroundColor Cyan
-& $iscc "D:\!Documents\VSCode\Messenger\installer.iss"
+& $iscc "$PSScriptRoot\installer.iss"
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "==> Kompiluji online web instalator (MessengeR_Online_Installer.exe)..." -ForegroundColor Cyan

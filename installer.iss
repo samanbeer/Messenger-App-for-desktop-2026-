@@ -11,9 +11,9 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={localappdata}\Programs\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-OutputDir=D:\!Documents\VSCode\Messenger\output
+OutputDir=output
 OutputBaseFilename=MessengeR_Setup
-SetupIconFile=D:\!Documents\VSCode\Messenger\icon.ico
+SetupIconFile=icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/ultra64
 SolidCompression=yes
@@ -31,8 +31,8 @@ Name: "desktopicon"; Description: "Vytvořit zástupce na ploše"; GroupDescript
 Name: "startmenuicon"; Description: "Vytvořit zástupce v nabídce Start"; GroupDescription: "Další možnosti:"
 
 [Files]
-Source: "D:\!Documents\VSCode\Messenger\publish_standalone\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\!Documents\VSCode\Messenger\publish_standalone\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "publish_standalone\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "publish_standalone\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; Tasks: startmenuicon
